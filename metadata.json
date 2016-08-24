@@ -1,0 +1,14 @@
+{
+  "name": "puppet-network_augeas",
+  "version": "0.1.0",
+  "author": "bentlema",
+  "summary": "A puppet module to manage network settings on a line-by-line basis (with Augeas) for RedHat flavors of Linux",
+  "license": "Apache 2.0",
+  "source": "https://github.com/bentlema/puppet-network_augeas",
+  "project_page": "https://github.com/bentlema/puppet-network_augeas",
+  "issues_url": "https://github.com/bentlema/puppet-network_augeas/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ]
+}
+
