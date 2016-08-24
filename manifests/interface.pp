@@ -17,7 +17,7 @@ define network_augeas::interface (
   augeas{"set_ethtool_opts_for_${name}":
     notify  => Service['network'],
     context => "/files/etc/sysconfig/network-scripts/ifcfg-${name}",
-    changes => [ ${augeas_command} ],
+    changes => [ "${augeas_command}" ],
   }
 
 }
