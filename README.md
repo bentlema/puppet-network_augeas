@@ -15,65 +15,86 @@
 
 ## Overview
 
-A one-maybe-two sentence summary of what the module does/what problem it solves.
-This is your 30 second elevator pitch for your module. Consider including
-OS/Puppet version it works with.
+A puppet module to manage network settings on a line-by-line basis (with Augeas) for RedHat flavors of Linux.
 
 ## Module Description
 
-If applicable, this section should have a brief description of the technology
-the module integrates with and what that integration enables. This section
-should answer the questions: "What does this module *do*?" and "Why would I use
-it?"
+There are many network modules out there for fully managing your network
+config on a RedHat/CentOS system (with templates).  My favorite is the
+one by [example42](https://github.com/example42/puppet-network)
 
-If your module has a range of functionality (installation, configuration,
-management, etc.) this is the time to mention it.
+But what if you simply want to add a single line, or edit a single setting
+within one of your ifcfg-ethX files, without giving full control over to
+Puppet?  This module is an example of how you can accomplish this with Augeas.
+
+This initial release simply allows you to add/edit the ETHTOOL_OPTS to your
+interface config files in /etc/sysconfig/network-scripts
 
 ## Setup
 
 ### What network_augeas affects
 
-* A list of files, packages, services, or operations that the module will alter,
-  impact, or execute on the system it's installed on.
-* This is a great place to stick any warnings.
-* Can be in list or paragraph form.
-
-### Setup Requirements **OPTIONAL**
-
-If your module requires anything extra before setting up (pluginsync enabled,
-etc.), mention it here.
+* Interface config files in /etc/sysconfig/network-scripts/ifcfg-**name** will be edited
+* The **NetworkManager** service will be disabled/stopped.
+* The **network** service will be restarted if a change is made to an interface file
 
 ### Beginning with network_augeas
 
-The very basic steps needed for a user to get the module up and running.
-
-If your most recent release breaks compatibility or requires particular steps
-for upgrading, you may wish to include an additional section here: Upgrading
-(For an example, see http://forge.puppetlabs.com/puppetlabs/firewall).
+Just install the module like you normally do.
 
 ## Usage
 
-Put the classes, types, and resources for customizing, configuring, and doing
-the fancy stuff with your module here.
+### With Hiera
+
+If you're using hiera_include()
+
+```
+  classes:
+    - network_augeas
+```
+
+And then specify the interfaces_hash at the appropriate level in your hierarchy:
+
+```
+  network_augeas::interfaces_hash:
+    eth0:
+      ethtool_opts: '-G ${DEVICE} rx 1024 tx 2048'
+```
+
+### Not using Hiera?
+
+```
+  class { 'network_augeas':
+    interfaces_hash = {
+      eth0 => {
+        ethtool_opts => '-G ${DEVICE} rx 1024 tx 2048'
+      }
+    }
+  }
+```
+
 
 ## Reference
 
-Here, list the classes, types, providers, facts, etc contained in your module.
-This section should include all of the under-the-hood workings of your module so
-people know what the module is touching on their system but don't need to mess
-with things. (We are working on automating this section!)
+The /etc/sysconfig/network-scripts/ifcfg-**iface** will be edited with augeas
+on a per-line basis.  No existing lines will be removed.
+
+Currently this module is only capable of adding/editing ETHTOOL_OPTS
+
+If the ETHTOOL_OPTS is updated by Puppet, it will also restart the network service.
+
+On RHEL7, the NetworkManager must not be enabled in order for the restart to properly
+refresh the settings with ethtool.  (This is a RHEL7 issue, not Puppet.)
 
 ## Limitations
 
-This is where you list OS compatibility, version compatibility, etc.
+Supported on RHEL6 and RHEL7 only.
+
+RHEL5 is not supported, as it doesn't properly deal with ETHTOOL_OPTS.
 
 ## Development
 
-Since your module is awesome, other users will want to play with it. Let them
-know what the ground rules for contributing are.
+This module is a bit boring at this point, but I'd like to eventually get it to
+the point of being able to edit any and every option you could possibly want
+in your /etc/sysconfig/network and/or /etc/sysconfig/network-scripts files.
 
-## Release Notes/Contributors/Etc **Optional**
-
-If you aren't using changelog, put your release notes here (though you should
-consider using changelog). You may also add any additional sections you feel are
-necessary or important to include here. Please use the `## ` header.
