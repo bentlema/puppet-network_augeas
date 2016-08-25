@@ -35,6 +35,10 @@
 #      ethtool_opts: '-G ${DEVICE} rx 1024 tx 2048'
 #
 #
+# === Dependencies
+#
+# Requires **stdlib**
+#
 # === Authors
 #
 # Mark A. Bentley <bentlema@yahoo.com>
@@ -45,30 +49,29 @@
 #
 class network_augeas (
 
-  $interfaces_hash = undef,
+  $interfaces_hash = {},
 
 ) {
 
-  validate_hash($interfaces_hash)
+  if ( ! empty($interfaces_hash)) {
 
-  case $::operatingsystemmajrelease {
-    '6','7': {
+    validate_hash($interfaces_hash)
 
-      service { 'NetworkManager':
-        ensure => 'stopped',
-        enable => false,
+    case $::operatingsystemmajrelease {
+      '6','7': {
+        service { 'NetworkManager':
+          ensure => 'stopped',
+          enable => false,
+        }
+        service { 'network':
+          ensure => 'running',
+          enable => true,
+        }
       }
-
-      service { 'network':
-        ensure => 'running',
-        enable => true,
+      default: {
+        notify{"Not supported on ${::osfamily} release ${::operatingsystemmajrelease}":}
       }
     }
-    default: {
-      notify{"Not supported on ${::osfamily} release ${::operatingsystemmajrelease}":}
-    }
+    create_resources('network_augeas::interface', $interfaces_hash)
   }
-
-  create_resources('network_augeas::interface', $interfaces_hash)
-
 }
