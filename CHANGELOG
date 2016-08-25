@@ -1,0 +1,4 @@
+0.1.1
+- Added check for empty hash in case class is declared but not used
+0.1.0
+- Basic module put out there
